@@ -1,4 +1,7 @@
+import time
+
 from dotenv import load_dotenv
+import schedule
 
 from db.db import DB
 from services.cvmDataService import CVMDataService
@@ -10,4 +13,15 @@ extrair_para = 'temp'
 
 db = DB()
 cvm_service = CVMDataService(url_arquivo, extrair_para, db)
-cvm_service.executar()
+
+
+def executar_servico_cvm():
+    cvm_service.executar()
+
+
+# Agendar a execução do serviço todos os dias às 01h
+schedule.every().day.at("01:00").do(executar_servico_cvm)
+
+while True:
+    schedule.run_pending()
+    time.sleep(1)
