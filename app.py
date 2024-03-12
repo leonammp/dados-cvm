@@ -1,7 +1,5 @@
-import time
-
 from flask import Flask
-from gevent import monkey;
+from gevent import monkey
 
 monkey.patch_all()
 import gevent
@@ -29,7 +27,6 @@ def executar_servico_cvm():
 schedule.every().day.at("01:00").do(executar_servico_cvm)
 
 
-# Definir uma rota para verificar o status do serviço
 @app.route("/")
 def status():
     return "Serviço CVM agendado para ser executado todos os dias às 01h."
@@ -41,9 +38,7 @@ def run_schedule():
         gevent.sleep(1)
 
 
-if __name__ == "__main__":
-    # Criar uma nova tarefa Gevent para executar o agendamento
-    schedule_task = gevent.spawn(run_schedule)
+# Criar uma nova tarefa Gevent para executar o agendamento
+schedule_task = gevent.spawn(run_schedule)
 
-    # Iniciar o servidor Flask assíncrono com Gevent
-    app.run()
+application = app
