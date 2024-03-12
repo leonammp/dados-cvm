@@ -11,27 +11,27 @@ from repository.eventoCorporativoRepository import EventoCorporativoRepository
 
 
 class CVMDataService:
-    tempfile = 'temp.zip'
+    temp_file = 'temp.zip'
+    temp_dir = 'temp'
 
-    def __init__(self, url_arquivo: str, extrair_para: str, db: DB):
-        self.url_arquivo = url_arquivo
-        self.extrair_para = extrair_para
+    def __init__(self, db: DB):
+        self.url_arquivo = os.environ.get("URL_ARQUIVO")
         self.evento_corporativo_repository = EventoCorporativoRepository(db)
 
     def executar(self):
         self.baixar_e_extrair_zip()
-        csv_file = os.path.join(self.extrair_para, "ipe_cia_aberta_2024.csv")
+        csv_file = os.path.join(self.temp_dir, "ipe_cia_aberta_2024.csv")
         self.inserir_dados_do_csv(csv_file)
         self.remover_diretorio()
 
     def baixar_e_extrair_zip(self) -> None:
         """Faz o download de um arquivo ZIP e extrai seu conteúdo."""
         response = requests.get(self.url_arquivo)
-        with open(self.tempfile, 'wb') as f:
+        with open(self.temp_file, 'wb') as f:
             f.write(response.content)
-        with zipfile.ZipFile(self.tempfile, 'r') as zip_ref:
-            zip_ref.extractall(self.extrair_para)
-        os.remove(self.tempfile)
+        with zipfile.ZipFile(self.temp_file, 'r') as zip_ref:
+            zip_ref.extractall(self.temp_dir)
+        os.remove(self.temp_file)
 
     def inserir_dados_do_csv(self, csv_file: str) -> None:
         """Insere dados de um arquivo CSV na tabela do banco de dados."""
@@ -46,8 +46,8 @@ class CVMDataService:
 
     def remover_diretorio(self) -> None:
         """Remove o diretório e seu conteúdo."""
-        for filename in os.listdir(self.extrair_para):
-            file_path = os.path.join(self.extrair_para, filename)
+        for filename in os.listdir(self.temp_dir):
+            file_path = os.path.join(self.temp_dir, filename)
             try:
                 if os.path.isfile(file_path) or os.path.islink(file_path):
                     os.unlink(file_path)

@@ -1,3 +1,5 @@
+import os
+import requests
 from flask import Flask
 from gevent import monkey
 
@@ -12,19 +14,24 @@ from services.cvmDataService import CVMDataService
 load_dotenv()
 app = Flask(__name__)
 
-url_arquivo = 'https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/IPE/DADOS/ipe_cia_aberta_2024.zip'
-extrair_para = 'temp'
-
 db = DB()
-cvm_service = CVMDataService(url_arquivo, extrair_para, db)
+cvm_service = CVMDataService(db)
 
 
 def executar_servico_cvm():
     cvm_service.executar()
 
 
+def executar_request_servidor():
+    """Request no servidor para a Render.io não hibernar a máquina"""
+    r = requests.get(os.environ.get("URL_APP"))
+    return r.text
+
+
 # Agendar a execução do serviço todos os dias às 01h
 schedule.every().day.at("01:00").do(executar_servico_cvm)
+# Execução do request para o servidor não hibernar
+schedule.every(10).minutes.do(executar_request_servidor)
 
 
 @app.route("/")
